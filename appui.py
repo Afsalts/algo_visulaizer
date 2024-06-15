@@ -11,7 +11,6 @@ def bubble_sort(arr):
             if arr[j] > arr[j+1]:
                 arr[j], arr[j+1] = arr[j+1], arr[j]
             steps.append(arr.copy())
-    print(steps)
     return steps
 
 def insertion_sort(arr):
@@ -71,10 +70,6 @@ def merge_sort(arr):
     merge_sort_helper(arr_copy, 0, len(arr) - 1)
     return steps
 
-
-    sort(arr)
-    return steps
-
 def quick_sort(arr):
     steps = []
 
@@ -100,8 +95,7 @@ def quick_sort(arr):
     return steps
 
 # Create Visualization Function
-def visualize_sorting(steps):
-    placeholder = st.empty()
+def visualize_sorting(steps, placeholder):
     for step in steps:
         with placeholder.container():
             st.bar_chart(step)
@@ -112,25 +106,37 @@ def main():
     st.title("Sorting Algorithm Visualizer")
     
     # User input
-    list_size = st.slider("Select list size", 10, 100, 50)
-    random_list = np.random.randint(0, 100, size=list_size).tolist()
+    list_size = st.slider("Select list size", 10, 700, 50)
+    random_list = np.random.randint(0, 700, size=list_size).tolist()
     st.write("Random List:", random_list)
     
-    # Select algorithm
-    algorithm = st.selectbox("Select Sorting Algorithm", ["Bubble Sort", "Insertion Sort", "Merge Sort", "Quick Sort"])
+    # Select algorithms
+    algorithms = st.multiselect(
+        "Select Sorting Algorithms", 
+        ["Bubble Sort", "Insertion Sort", "Merge Sort", "Quick Sort"]
+    )
+    st.header("Initial Chart")
     st.bar_chart(random_list)
     if st.button("Sort"):
-        if algorithm == "Bubble Sort":
-            steps = bubble_sort(random_list)
-        elif algorithm == "Insertion Sort":
-            steps = insertion_sort(random_list)
-        elif algorithm == "Merge Sort":
-            steps = merge_sort(random_list)
-        elif algorithm == "Quick Sort":
-            steps = quick_sort(random_list)
+        placeholders = [st.empty() for _ in range(len(algorithms))]
+        algorithm_functions = {
+            "Bubble Sort": bubble_sort,
+            "Insertion Sort": insertion_sort,
+            "Merge Sort": merge_sort,
+            "Quick Sort": quick_sort,
+        }
+        steps_dict = {algo: algorithm_functions[algo](random_list.copy()) for algo in algorithms}
 
-        visualize_sorting(steps)
+        max_steps = max(len(steps) for steps in steps_dict.values())
+
+        for i in range(max_steps):
+            for algo, steps in steps_dict.items():
+                index = algorithms.index(algo)
+                step = steps[i] if i < len(steps) else steps[-1]
+                with placeholders[index].container():
+                    st.subheader(algo)
+                    st.bar_chart(step)
+            time.sleep(0.1)  # Adjust the sleep time to speed up or slow down the animation
 
 if __name__ == "__main__":
     main()
-
